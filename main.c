@@ -181,7 +181,7 @@ void makeItRain()
     switch (wgetch(sky))
     {
       case ' ':/* When the user hits [space], kill the animation. */
-      case 27:/* Or escape. */
+      case 27:/* Or escape.  Escape is probably just as natural for many TUI users. */
         return;
       default:/* Ignore any other input. */
         break;
