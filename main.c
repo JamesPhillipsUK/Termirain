@@ -22,6 +22,7 @@
 #include <ncurses.h>/* NCurses (TUI) Library */
 #include <unistd.h>/* Used for usleep() */
 #include <time.h>/* Time Library */
+#include <string.h>/* String Library */
 #define AMOUNTOFRAIN 50/* The number of raindrops. */
 
 /**
@@ -36,6 +37,7 @@ typedef struct raindrop
 raindrop raindrops[AMOUNTOFRAIN];/* Contains an array of each raindrop. */
 WINDOW *sky;/* This will form the sky above the cities, the majority of the game will happen here. */
 WINDOW *landscape;/* This will form the landscape at the bottom of the screen, including cities. */
+bool house = false;/* Does the user want to see a house? */
 
 /**
  *  Builds an NCurses window on the screen, with a given size and location. 
@@ -52,6 +54,25 @@ void createWindow(WINDOW **window,int height, int width, int yLocation, int xLoc
 }
 
 /**
+ * Structure for a house.
+ **/
+void addHouse()
+{
+  /* Draw the roof. */
+  wattron(landscape, COLOR_PAIR(4));/* Initialise Black-on-red colour scheme. */
+  mvwaddch(landscape, 0, 50, ' ');
+  mvwprintw(landscape, 1, 49, "   ");
+  mvwprintw(landscape, 2, 48, "     ");
+  /* Draw the rest of the building. */
+  wattron(landscape, COLOR_PAIR(5));/* Initialise Black-on-yellow colour scheme. */
+  mvwprintw(landscape, 3, 49, "   ");
+  mvwaddch(landscape, 4, 49, ' ');
+  mvwaddch(landscape, 4, 51, ' ');
+  wattron(landscape, COLOR_PAIR(2));/* Initialise Black-on-black colour scheme. */
+  mvwaddch(landscape, 4, 50, ' ');
+}
+
+/**
  * Replaces the OS terminal colour scheme with our own, and declares the colour pairs we'll need.
  **/
 void prepareScreen()
@@ -59,10 +80,12 @@ void prepareScreen()
   init_pair(1, COLOR_BLACK, COLOR_BLUE);/* Set the first colour pair to black-on-blue. */
   init_pair(2, COLOR_BLACK, COLOR_BLACK);/* Set black-on-black colour scheme. */
   init_pair(3, COLOR_BLACK, COLOR_GREEN);/* Set black-on-green colour scheme. */
+  init_pair(4, COLOR_BLACK, COLOR_RED);/* Set black-on-red colour scheme. */
+  init_pair(5, COLOR_BLACK, COLOR_YELLOW);/* Set black-on-yellow colour scheme. */
   
   /* Clear sky to pair 1 */
   wattron(sky, COLOR_PAIR(2));
-  for (short yAxis = 0; yAxis < LINES - 3; yAxis++)
+  for (short yAxis = 0; yAxis < LINES - 5; yAxis++)
   {
     for (short xAxis = 0; xAxis < COLS; xAxis++)
       mvwaddch(sky, yAxis, xAxis, ' ');/* Fill every character on the sky window with a black space. */
@@ -73,11 +96,15 @@ void prepareScreen()
 
   /* Clear landscape to pair 3 */
   wattron(landscape, COLOR_PAIR(3));/* Initialise Black-on-green colour scheme. */
-  for (short yaxis = 0; yaxis < 3; yaxis++)
+  for (short yaxis = 0; yaxis < 5; yaxis++)
   {
     for (short xaxis = 0; xaxis < COLS; xaxis++)
       mvwaddch(landscape, yaxis, xaxis, ' ');/* Fill every character on the landscape window with a green space. */
   }
+
+  if (house)/* If a house has been selected by the user, add one. */
+    addHouse();
+
   wrefresh(landscape);
 }
 
@@ -97,8 +124,8 @@ void initNCurses()
   noecho();/* Don't output user input direct to the screen.*/
   curs_set(0);/* Make the default cursor invisible. */
   keypad(stdscr, TRUE);/* Accept non-alphanumeric key inputs. */
-  createWindow(&sky, LINES - 3, COLS, 0, 0);
-  createWindow(&landscape, 3, COLS, LINES - 3, 0);
+  createWindow(&sky, LINES - 5, COLS, 0, 0);
+  createWindow(&landscape, 5, COLS, LINES - 5, 0);
   start_color();/* Enable colour support in NCurses. */
   prepareScreen();
 }
@@ -107,6 +134,7 @@ void initNCurses()
  * Time-based Pseudo-random number generation. 
  * @param min - The minimum possible number to choose from.
  * @param max - The maximum possible number to choose from.
+ * @returns a pseudo-random number.
  **/
 short rNG(short min, short max)
 {
@@ -137,13 +165,13 @@ void makeItRain()
       wattroff(sky, COLOR_PAIR(1));
       wattron(sky, COLOR_PAIR(2));
       if (raindrops[drop].yLocation == 0)
-        mvwaddch(sky, LINES - 4, raindrops[drop].xLocation, ' ');
+        mvwaddch(sky, LINES - 6, raindrops[drop].xLocation, ' ');
       else
         mvwaddch(sky, raindrops[drop].yLocation - 1, raindrops[drop].xLocation, ' ');
       wattroff(sky, COLOR_PAIR(2));
       wattron(sky, COLOR_PAIR(1));
 
-      if (raindrops[drop].yLocation < LINES - 4)
+      if (raindrops[drop].yLocation < LINES - 6)
         raindrops[drop].yLocation++;/* If the raindrop isn't at the bottom of the window, move it down one pixel. */
       else
         raindrops[drop].yLocation = 0;/* Move it to the top of the window to begin again. */
@@ -153,6 +181,7 @@ void makeItRain()
     switch (wgetch(sky))
     {
       case ' ':/* When the user hits [space], kill the animation. */
+      case 27:/* Or escape. */
         return;
       default:/* Ignore any other input. */
         break;
@@ -173,10 +202,21 @@ void killNCurses()
 
 /**
  * Main function, called by the OS.  
- * Void out any args because we aren't using them, so why waste the memory storing them? 
+ * Use argument counter and argument list to check for additional options.
+ * @param argc - The argument counter. 
+ * @param argv - The argument list
  **/
-int main(void)
+int main(int argc, char** argv)
 {
+  if (argc > 1)/* There are arguments */
+  {
+    for (int args = 0; args < argc; args++)
+    {
+      if (strcmp(argv[args], "-h") == 0)/* The house has been enabled. */
+        house = true;
+    }
+  }
+
   srand((unsigned) time(NULL));/* Used in rNG() for time-based pseudo-random number generation. */
   initNCurses();/* Initialise NCurses windows. */
   makeItRain();/* Does what it says on the tin. */
