@@ -2,7 +2,7 @@
  * Termirain.
  * An animated screensaver for *Nix TUIs.
  * 
- * Copyright (C) 2020 Jesse Phillips, Released under the GNU GPL v3.0 or later.
+ * Copyright (C) 2020 - 21 Jesse Phillips, Released under the GNU GPL v3.0 or later.
  * 
  * This program is free software: you can redistribute it and/or modify it under the terms of the 
  * GNU General Public License as published by the Free Software Foundation, either version 3 of the License, 
@@ -235,10 +235,10 @@ int main(int argc, char** argv)
           switch (argv[args][count])
           {
             case 'h':
-              house = true;
+              house = true;/* The user has requested a house. */
               break;
             case 'p':
-              pond = true;
+              pond = true;/* The user has requested a pond. */
               break;
             default:/* The user has input an invalid argument.  Return that to the user and fail. */
               printf("Invalid argument: %c\n", argv[args][count]);
