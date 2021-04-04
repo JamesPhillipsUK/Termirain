@@ -38,6 +38,7 @@ raindrop raindrops[AMOUNTOFRAIN];/* Contains an array of each raindrop. */
 WINDOW *sky;/* This will form the sky above the cities, the majority of the game will happen here. */
 WINDOW *landscape;/* This will form the landscape at the bottom of the screen, including cities. */
 bool house = false;/* Does the user want to see a house? */
+bool pond = false;/* Does the user want to see a pond? */
 
 /**
  *  Builds an NCurses window on the screen, with a given size and location. 
@@ -73,6 +74,18 @@ void addHouse()
 }
 
 /**
+ * Structure for a pond.
+ **/
+void addPond()
+{
+  /* Draw the roof. */
+  wattron(landscape, COLOR_PAIR(1));/* Initialise Black-on-blue colour scheme. */
+  mvwprintw(landscape, 1, 30, "   ");
+  mvwprintw(landscape, 2, 29, "     ");
+  mvwprintw(landscape, 3, 30, "   ");
+}
+
+/**
  * Replaces the OS terminal colour scheme with our own, and declares the colour pairs we'll need.
  **/
 void prepareScreen()
@@ -104,6 +117,9 @@ void prepareScreen()
 
   if (house)/* If a house has been selected by the user, add one. */
     addHouse();
+
+  if (pond)/* If a pond has been selected by the user, add one. */
+    addPond();
 
   wrefresh(landscape);
 }
@@ -212,8 +228,25 @@ int main(int argc, char** argv)
   {
     for (int args = 0; args < argc; args++)
     {
-      if (strcmp(argv[args], "-h") == 0)/* The house has been enabled. */
-        house = true;
+      if (argv[args][0] == '-')/* Search for argument list. */
+      {
+        for (short count = 1; count < strlen(argv[args]); count++)/* Iterate through the list. */
+        {
+          switch (argv[args][count])
+          {
+            case 'h':
+              house = true;
+              break;
+            case 'p':
+              pond = true;
+              break;
+            default:/* The user has input an invalid argument.  Return that to the user and fail. */
+              printf("Invalid argument: %c\n", argv[args][count]);
+              return EXIT_FAILURE;
+              break;
+          }
+        }
+      }
     }
   }
 
