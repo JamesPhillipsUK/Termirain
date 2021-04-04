@@ -61,16 +61,16 @@ void addHouse()
 {
   /* Draw the roof. */
   wattron(landscape, COLOR_PAIR(4));/* Initialise Black-on-red colour scheme. */
-  mvwaddch(landscape, 0, 50, ' ');
-  mvwprintw(landscape, 1, 49, "   ");
-  mvwprintw(landscape, 2, 48, "     ");
+  mvwaddch(landscape, 0, (COLS / 3) * 2, ' ');
+  mvwprintw(landscape, 1, (COLS / 3) * 2 - 1, "   ");
+  mvwprintw(landscape, 2, (COLS / 3) * 2 - 2, "     ");
   /* Draw the rest of the building. */
   wattron(landscape, COLOR_PAIR(5));/* Initialise Black-on-yellow colour scheme. */
-  mvwprintw(landscape, 3, 49, "   ");
-  mvwaddch(landscape, 4, 49, ' ');
-  mvwaddch(landscape, 4, 51, ' ');
+  mvwprintw(landscape, 3, (COLS / 3) * 2 - 1, "   ");
+  mvwaddch(landscape, 4, (COLS / 3) * 2 - 1, ' ');
+  mvwaddch(landscape, 4, (COLS / 3) * 2 + 1, ' ');
   wattron(landscape, COLOR_PAIR(2));/* Initialise Black-on-black colour scheme. */
-  mvwaddch(landscape, 4, 50, ' ');
+  mvwaddch(landscape, 4, (COLS / 3) * 2, ' ');
 }
 
 /**
@@ -80,9 +80,9 @@ void addPond()
 {
   /* Draw the roof. */
   wattron(landscape, COLOR_PAIR(1));/* Initialise Black-on-blue colour scheme. */
-  mvwprintw(landscape, 1, 30, "   ");
-  mvwprintw(landscape, 2, 29, "     ");
-  mvwprintw(landscape, 3, 30, "   ");
+  mvwprintw(landscape, 1, COLS / 3, "   ");
+  mvwprintw(landscape, 2, COLS / 3 - 1, "     ");
+  mvwprintw(landscape, 3, COLS / 3, "   ");
 }
 
 /**
